@@ -1,5 +1,5 @@
 //
-//  Creatures.swift
+//  CreatureDetail.swift
 //  CatchEmAll
 //
 //  Created by Jeff Gutierrez on 10/27/25.
@@ -7,28 +7,28 @@
 
 import Foundation
 
-
 @Observable // Will watch objects for changes so that SwiftUI will redraw the interface when needed
-class Creatures {
+class CreatureDetail {
     private struct Returned: Codable{
-        var count: Int
-        var next: String? //TODO: we want to change this into and optional
-        var results: [Creature]
+        var height: Double
+        var weight: Double
+        var sprites: Sprite
     }
     
+    struct Sprite: Codable{
+        var front_default: String
+    }
     
-    var urlString = "https://pokeapi.co/api/v2/pokemon/"
-    var count = 0
-    var creaturesArray: [Creature] = []
-    var isLoading = false
- 
+    var urlString = "" //Update this with the string passed
+    var height = 0.0
+    var weight = 0.0
+    var imageURL = ""
+    
     func getData() async{
         print("🕸️We are accessing the url \(urlString)")
-        isLoading = true
         
         guard let url = URL(string: urlString) else {
             print("😡ERROR: Could not create a URL from \(urlString)")
-            isLoading = false
             return
         }
         
@@ -37,18 +37,14 @@ class Creatures {
             
             guard let returned = try? JSONDecoder().decode(Returned.self, from: data) else {
                 print("😡JSON ERROR: Could not decode returned JSON data")
-                isLoading = false
                 return
             }
-            Task{ @MainActor in
-                self.count = returned.count
-                self.urlString = returned.next ?? ""
-                self.creaturesArray = self.creaturesArray + returned.results
-                isLoading = false
-            }
+            self.height = returned.height
+            self.weight = returned.weight
+            self.imageURL = returned.sprites.front_default
+
         } catch {
             print("😡ERROR: Could not get data from \(urlString)")
-            isLoading = false
         }
     }
 }
